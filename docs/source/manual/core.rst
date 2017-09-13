@@ -26,27 +26,43 @@ Dropwizard consists mostly of glue code to automatically connect and configure t
 Organizing Your Project
 =======================
 
-In general, we recommend you separate your projects into three Maven modules: ``project-api``,
-``project-client``, and ``project-application``.
+If you plan on developing a client library for other developers to access your service, we recommend
+you separate your projects into three Maven modules: ``project-api``, ``project-client``, and
+``project-application``.
 
 ``project-api`` should contain your :ref:`man-core-representations`; ``project-client`` should use
 those classes and an :ref:`HTTP client <man-client>` to implement a full-fledged client for your
 application, and ``project-application`` should provide the actual application implementation, including
 :ref:`man-core-resources`.
 
-Our applications tend to look like this:
+To give a concrete example of this project structure, let's say we wanted to create a Stripe_-like
+API where clients can issue charges and the server would echo the charge back to the client.
+``stripe-api`` project would hold our ``Charge`` object as both the server and client want to work
+with the charge and to promote code reuse, ``Charge`` objects are stored in a shared module.
+``stripe-app`` is the Dropwizard application. ``stripe-client`` abstracts away the raw HTTP
+interactions and deserialization logic. Instead of using a HTTP client, users of ``stripe-client``
+would just pass in a ``Charge`` object to a function and behind the scenes, ``stripe-client`` will
+call the HTTP endpoint. The client library may also take care of connection pooling, and may
+provide a more friendly way of interpreting error messages. Basically, distributing a client library
+for your app will help other developers integrate more quickly with the service.
+
+If you are not planning on distributing a client library for developers, one
+can combine ``project-api`` and ``project-application`` into a single project,
+which tends to look like this:
 
 * ``com.example.myapplication``:
 
-  * ``api``: :ref:`man-core-representations`.
+  * ``api``: :ref:`man-core-representations`. Request and response bodies.
   * ``cli``: :ref:`man-core-commands`
-  * ``client``: :ref:`Client <man-client>` implementation for your application
-  * ``core``: Domain implementation
+  * ``client``: :ref:`Client <man-client>` code that accesses external HTTP services.
+  * ``core``: Domain implementation; where objects not used in the API such as POJOs, validations, crypto, etc, reside.
   * ``jdbi``: :ref:`Database <man-jdbi>` access classes
   * ``health``: :ref:`man-core-healthchecks`
   * ``resources``: :ref:`man-core-resources`
   * ``MyApplication``: The :ref:`application <man-core-application>` class
   * ``MyApplicationConfiguration``: :ref:`configuration <man-core-configuration>` class
+
+.. _Stripe: https://stripe.com/docs/api/java
 
 .. _man-core-application:
 
@@ -977,6 +993,53 @@ single ``Logger``:
 
     curl -X POST -d "logger=com.example.helloworld&level=INFO" http://localhost:8081/tasks/log-level
 
+.. _man-core-logging-filters:
+
+Logging Filters
+---------------
+
+Just because a statement has a level of ``INFO``, doesn't mean it should be logged with other ``INFO`` statements. One can create logging filters that will intercept log statements before they are written and decide if they're allowed. Log filters can work on both regular statements and request log statements. The following example will be for request logging as there are many reasons why certain requests may be excluded from the log:
+
+* Only log requests that have large bodies
+* Only log requests that are slow
+* Only log requests that resulted in a non-2xx status code
+* Exclude requests that contain sensitive information in the URL
+* Exclude healthcheck requests
+
+The example will demonstrate excluding ``/secret`` requests from the log.
+
+.. code-block:: java
+
+    @JsonTypeName("secret-filter-factory")
+    public class SecretFilterFactory implements FilterFactory<IAccessEvent> {
+        @Override
+        public Filter<IAccessEvent> build() {
+            return new Filter<IAccessEvent>() {
+                @Override
+                public FilterReply decide(IAccessEvent event) {
+                    if (event.getRequestURI().equals("/secret")) {
+                        return FilterReply.DENY;
+                    } else {
+                        return FilterReply.NEUTRAL;
+                    }
+                }
+            };
+        }
+    }
+
+Reference ``SecretFilterFactory`` type in our configuration.
+
+.. code-block:: yaml
+
+    server:
+      requestLog:
+        appenders:
+          - type: console
+            filterFactories:
+              - type: secret-filter-factory
+
+The last step is to add our class (in this case ``com.example.SecretFilterFactory``) to ``META-INF/services/io.dropwizard.logging.filter.FilterFactory`` in our resources folder.
+
 .. _man-core-testing-applications:
 
 Testing Applications
@@ -1050,7 +1113,7 @@ Unsurprisingly, most of your day-to-day work with a Dropwizard application will 
 classes, which model the resources exposed in your RESTful API. Dropwizard uses Jersey__ for this,
 so most of this section is just re-hashing or collecting various bits of Jersey documentation.
 
-.. __: http://jersey.java.net/
+.. __: http://jersey.github.io/
 
 Jersey is a framework for mapping various aspects of incoming HTTP requests to POJOs and then
 mapping various aspects of POJOs to outgoing HTTP responses. Here's a basic resource class:
@@ -1554,7 +1617,7 @@ has a rich api for `filters and interceptors`_ that can be used directly in Drop
 You can stop the request from reaching your resources by throwing a ``WebApplicationException``. Alternatively,
 you can use filters to modify inbound requests or outbound responses.
 
-.. _filters and interceptors: http://jersey.java.net/documentation/latest/filters-and-interceptors.html
+.. _filters and interceptors: http://jersey.github.io/documentation/latest/filters-and-interceptors.html
 
 .. code-block:: java
 
@@ -1576,7 +1639,7 @@ the request is passed through.
 
 Filters can be dynamically bound to resource methods using `DynamicFeature`_:
 
-.. _DynamicFeature: http://jax-rs-spec.java.net/nonav/2.0-rev-a/apidocs/index.html
+.. _DynamicFeature: https://docs.oracle.com/javaee/7/api/javax/ws/rs/container/DynamicFeature.html
 
 .. code-block:: java
 

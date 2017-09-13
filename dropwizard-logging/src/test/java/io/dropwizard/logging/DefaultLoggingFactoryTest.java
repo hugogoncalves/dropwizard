@@ -1,7 +1,10 @@
 package io.dropwizard.logging;
 
-import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.spi.LifeCycle;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,7 +57,7 @@ public class DefaultLoggingFactoryTest {
 
     @Test
     public void hasADefaultLevel() throws Exception {
-        assertThat(config.getLevel()).isEqualTo(Level.INFO);
+        assertThat(config.getLevel()).isEqualTo("INFO");
     }
 
     @Test
@@ -66,7 +70,7 @@ public class DefaultLoggingFactoryTest {
         final JsonNode newApp = config.getLoggers().get("com.example.newApp");
         assertThat(newApp).isNotNull();
         final LoggerConfiguration newAppConfiguration = objectMapper.treeToValue(newApp, LoggerConfiguration.class);
-        assertThat(newAppConfiguration.getLevel()).isEqualTo(Level.DEBUG);
+        assertThat(newAppConfiguration.getLevel()).isEqualTo("DEBUG");
         assertThat(newAppConfiguration.getAppenders()).hasSize(1);
         final AppenderFactory<ILoggingEvent> appenderFactory = newAppConfiguration.getAppenders().get(0);
         assertThat(appenderFactory).isInstanceOf(FileAppenderFactory.class);
@@ -83,7 +87,7 @@ public class DefaultLoggingFactoryTest {
         final JsonNode legacyApp = config.getLoggers().get("com.example.legacyApp");
         assertThat(legacyApp).isNotNull();
         final LoggerConfiguration legacyAppConfiguration = objectMapper.treeToValue(legacyApp, LoggerConfiguration.class);
-        assertThat(legacyAppConfiguration.getLevel()).isEqualTo(Level.DEBUG);
+        assertThat(legacyAppConfiguration.getLevel()).isEqualTo("DEBUG");
         // We should not create additional appenders, if they are not specified
         assertThat(legacyAppConfiguration.getAppenders()).isEmpty();
     }
@@ -132,4 +136,20 @@ public class DefaultLoggingFactoryTest {
             "INFO  com.example.notAdditive: Not additive application info log");
     }
 
+    @Test
+    public void testResetAppenders() throws Exception {
+        final String configPath = Resources.getResource("yaml/logging.yml").getFile();
+        final DefaultLoggingFactory config = factory.build(new FileConfigurationSourceProvider(), configPath);
+        config.configure(new MetricRegistry(), "test-logger");
+
+        config.reset();
+
+        // There should be exactly one appender configured, a ConsoleAppender
+        final Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        final List<Appender<ILoggingEvent>> appenders = ImmutableList.copyOf(logger.iteratorForAppenders());
+        assertThat(appenders).hasAtLeastOneElementOfType(ConsoleAppender.class);
+        assertThat(appenders).as("context").allMatch((Appender<?> a) -> a.getContext() != null);
+        assertThat(appenders).as("started").allMatch(LifeCycle::isStarted);
+        assertThat(appenders).hasSize(1);
+    }
 }

@@ -13,18 +13,76 @@ v1.2.0: Unreleased
 * Improve error handling of `@FormParam` resources `#1982 <https://github.com/dropwizard/dropwizard/pull/1982>`_
 * Add JDBC interceptors through configuration `#2030 <https://github.com/dropwizard/dropwizard/pull/2030>`_
 * Support Dropwizard applications without logback `#1900 <https://github.com/dropwizard/dropwizard/pull/1900>`_
-* Replace deprecated SizeAndTimeBasedFNATP with SizeAndTimeBasedRollingPolicy `#2100 <https://github.com/dropwizard/dropwizard/pull/2100>`_
-* Upgrade to H2 1.4.194
+* Replace deprecated SizeAndTimeBasedFNATP with SizeAndTimeBasedRollingPolicy `#2010 <https://github.com/dropwizard/dropwizard/pull/2010>`_
+* Decrease allowable tomcat jdbc validation interval to 50ms `#2051 <https://github.com/dropwizard/dropwizard/pull/2051>`_
+* Add support for setting several cipher suites for HTTP/2 `#2119 <https://github.com/dropwizard/dropwizard/pull/2119>`_
+* Remove Dropwizard's Jackson dependency on Logback `#2112 <https://github.com/dropwizard/dropwizard/pull/2112>`_
+* Handle badly formed "Accept-Language" headers `#2103 <https://github.com/dropwizard/dropwizard/pull/2103>`_
+* Use LoadingCache in CachingAuthorizer `#2096 <https://github.com/dropwizard/dropwizard/pull/2096>`_
+* Client NTLM Authentication `#2091 <https://github.com/dropwizard/dropwizard/pull/2091>`_
+* Add optional Jersey filters `#1948 <https://github.com/dropwizard/dropwizard/pull/1948>`_
+* Upgrade to Apache commons-lang3 3.6
+* Upgrade to AssertJ 3.8.0
+* Upgrade to Guava 23.0
+* Upgrade to H2 1.4.196
 * Upgrade to Hibernate 5.2.10.Final
 * Upgrade to Hibernate Validator 5.4.1.Final
 * Upgrade to HSQLDB 2.4.0
-* Upgrade to Jackson 2.8.8
-* Upgrade to Jetty 9.4.4.v20170414
+* Upgrade to Jackson 2.9.1
+* Upgrade to Jetty 9.4.6.v20170531
 * Upgrade to Joda-Time 2.9.9
 * Upgrade to Logback 1.2.3
+* Upgrade to Metrics 3.2.4
+* Upgrade to Mockito 2.8.47
+* Upgrade to Mustache.java 0.9.5
+* Upgrade to Objenesis 2.6
 * Upgrade to SLF4J 1.7.25
-* Upgrade to tomcat-jdbc 8.5.14
+* Upgrade to tomcat-jdbc 8.5.20
 
+.. _rel-1.1.4:
+
+v1.1.4: Aug 24 2017
+===================
+
+* Upgrade to Jackson 2.8.10 `#2120 <https://github.com/dropwizard/dropwizard/issues/2120>`_
+
+.. _rel-1.1.3:
+
+v1.1.3: Jul 31 2017
+===================
+
+* Handle badly formed 'Accept-Language' headers `#2097 <https://github.com/dropwizard/dropwizard/issues/2097>`_
+* Upgrade to Jetty 9.4.6.v20170531 to address `CVE-2017-9735 <https://nvd.nist.gov/vuln/detail/CVE-2017-9735>`_ `#2113 <https://github.com/dropwizard/dropwizard/issues/2113>`_
+
+.. _rel-1.1.2:
+
+v1.1.2 June 27 2017
+===================
+
+* Updated Jackson to 2.8.9. Fixes a security `vulnerability <https://github.com/FasterXML/jackson-databind/issues/1599>`_ with default typing `#2086 <https://github.com/dropwizard/dropwizard/issues/2086>`_
+* Use the correct `JsonFactory` in JSON configuration parsing `#2046 <https://github.com/dropwizard/dropwizard/issues/2046>`_
+* Support of extending of `DBIFactory` `#2067 <https://github.com/dropwizard/dropwizard/issues/2067>`_
+* Add time zone to Java 8 datetime mappers `#2069 <https://github.com/dropwizard/dropwizard/issues/2069>`_
+
+.. _rel-1.0.8:
+
+v1.0.8 June 27 2017
+===================
+
+* Updated Jackson to 2.7.9.1. Fixes a security `vulnerability <https://github.com/FasterXML/jackson-databind/issues/1599>`_ with default typing `#2087 <https://github.com/dropwizard/dropwizard/issues/2087>`_
+
+.. _rel-1.1.1:
+
+v1.1.1 May 19 2017
+===================
+
+* Set the console logging context after a reset `#1973 <https://github.com/dropwizard/dropwizard/pull/1973>`_
+* Set logging context for file appenders before setting the buffer size `#1975 <https://github.com/dropwizard/dropwizard/pull/1975>`_
+* Remove javax.el from jersey-bean-validation `#1976 <https://github.com/dropwizard/dropwizard/pull/1976>`_
+* Exclude duplicated JTA 1.1 from dropwizard-hibernate dependencies `#1977 <https://github.com/dropwizard/dropwizard/pull/1977>`_
+* Add missing @UnwrapValidatedValue annotations `#1993 <https://github.com/dropwizard/dropwizard/pull/1993>`_
+* Fix HttpSessionListener.sessionDestroyed is not being called `#2032 <https://github.com/dropwizard/dropwizard/pull/2032>`_
+* Add flag to make ThreadNameFilter optional `#2014 <https://github.com/dropwizard/dropwizard/pull/2014>`_
 
 .. _rel-1.1.0:
 
@@ -228,7 +286,7 @@ v0.9.0: Oct 28 2015
 * Fixed a security bug in ``CachingAuthenticator`` with caching results of failed authentication attempts `#1082 <https://github.com/dropwizard/dropwizard/pull/1082>`_
 * Correct handling misconfigured context paths in ``ServerFactory`` `#785 <https://github.com/dropwizard/dropwizard/pull/785>`_
 * Logging context paths during application startup `#994 <https://github.com/dropwizard/dropwizard/pull/994>`_, `#1072 <https://github.com/dropwizard/dropwizard/pull/1072>`_
-* Support for `Jersey Bean Validation <https://jersey.java.net/documentation/latest/bean-validation.html>`_ `#842 <https://github.com/dropwizard/dropwizard/pull/842>`_
+* Support for `Jersey Bean Validation <https://jersey.github.io/documentation/latest/bean-validation.html>`_ `#842 <https://github.com/dropwizard/dropwizard/pull/842>`_
 * Returning descriptive constraint violation messages `#1039 <https://github.com/dropwizard/dropwizard/pull/1039>`_,
 * Trace logging of failed constraint violations `#992 <https://github.com/dropwizard/dropwizard/pull/992>`_
 * Returning correct HTTP status codes for constraint violations `#993 <https://github.com/dropwizard/dropwizard/pull/993>`_

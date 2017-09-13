@@ -124,7 +124,7 @@ If HttpClient_ is too low-level for you, Dropwizard also supports Jersey's `Clie
 Jersey's ``Client`` allows you to use all of the server-side media type support that your service
 uses to, for example, deserialize ``application/json`` request entities as POJOs.
 
-.. _Client API: https://jersey.java.net/documentation/2.24/client.html
+.. _Client API: https://jersey.github.io/documentation/2.24/client.html
 
 To create a :ref:`managed <man-core-managed>`, instrumented ``JerseyClient`` instance, your
 :ref:`configuration class <man-core-configuration>` needs an :ref:`jersey client configuration <man-configuration-clients-jersey>` instance:
@@ -139,6 +139,11 @@ To create a :ref:`managed <man-core-managed>`, instrumented ``JerseyClient`` ins
         @JsonProperty("jerseyClient")
         public JerseyClientConfiguration getJerseyClientConfiguration() {
             return jerseyClient;
+        }
+        
+        @JsonProperty("jerseyClient")
+        public void setJerseyClientConfiguration(JerseyClientConfiguration jerseyClient) {
+            this.jerseyClient = jerseyClient;
         }
     }
 
@@ -177,8 +182,8 @@ the `Jersey Client Properties`_ can be used.
     method on the ``JerseyClientBuilder``, because by default it's configured by Dropwizard's
     ``HttpClientBuilder``, so the Jersey properties are ignored.
 
-.. _Jersey Client Configuration: https://jersey.java.net/documentation/latest/appendix-properties.html#appendix-properties-client
-.. _Jersey Client Properties: https://jersey.java.net/apidocs/2.24/jersey/org/glassfish/jersey/client/ClientProperties.html
+.. _Jersey Client Configuration: https://jersey.github.io/documentation/latest/appendix-properties.html#appendix-properties-client
+.. _Jersey Client Properties: https://jersey.github.io/apidocs/2.24/jersey/org/glassfish/jersey/client/ClientProperties.html
 
 .. _man-client-jersey-rx-usage:
 
@@ -215,4 +220,47 @@ Alternatively, there are RxJava, Guava, and JSR-166e implementations.
 By allowing Dropwizard to create the rx-client, the same thread pool that is utilized by traditional
 synchronous and asynchronous requests, is used for rx requests.
 
-.. _rx-clients: https://jersey.java.net/documentation/2.24/rx-client.html
+.. _rx-clients: https://jersey.github.io/documentation/2.24/rx-client.html
+
+Proxy Authentication
+--------------------
+
+The client can utilise a forward proxy, supporting both Basic and NTLM authentication schemes. 
+Basic Auth against a proxy is simple:
+
+.. code-block:: yaml
+ 
+     proxy:
+          host: '192.168.52.11'
+          port: 8080
+          scheme : 'https'
+          auth:
+            username: 'secret'
+            password: 'stuff'
+          nonProxyHosts:
+            - 'localhost'
+            - '192.168.52.*'
+            - '*.example.com'   
+
+NTLM Auth is configured by setting the the relevant windows properties. 
+
+.. code-block:: yaml
+
+     proxy:
+          host: '192.168.52.11'
+          port: 8080
+          scheme : 'https'
+          auth:
+            username: 'secret'
+            password: 'stuff'
+            authScheme: 'NTLM'
+            realm: 'realm'                    # optional, defaults to ANY_REALM
+            hostname: 'workstation'           # optional, defaults to null but may be required depending on your AD environment
+            domain: 'HYPERCOMPUGLOBALMEGANET' # optional, defaults to null but may be required depending on your AD environment
+            credentialType: 'NT'
+          nonProxyHosts:
+            - 'localhost'
+            - '192.168.52.*'
+            - '*.example.com'   
+
+
